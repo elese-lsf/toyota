@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Plan de Ahorro Toyota – Prototipo de dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<style>
+:root{
+  --bg:#EDEEF0;--surface:#FFFFFF;--ink:#17202B;--muted:#5B6673;--line:#D9DDE2;
+  --red:#D4202F;--sc-base:#2B5C8F;--sc-opt:#2D7A5A;--sc-pes:#C27A12;--soft:#F4F5F7;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#10151C;--surface:#18202A;--ink:#E8ECF1;--muted:#98A3B0;--line:#2B3542;--red:#F0505C;--sc-base:#6FA3DA;--sc-opt:#5CC39A;--sc-pes:#E5A04A;--soft:#1E2733}
+}
+:root[data-theme="dark"]{--bg:#10151C;--surface:#18202A;--ink:#E8ECF1;--muted:#98A3B0;--line:#2B3542;--red:#F0505C;--sc-base:#6FA3DA;--sc-opt:#5CC39A;--sc-pes:#E5A04A;--soft:#1E2733}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:15px;line-height:1.45}
+.wrap{max-width:1080px;margin:0 auto;padding:0 12px 40px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:12px 0 0;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between}
+.brand h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;margin:0;letter-spacing:.2px}
+.brand h1 i{display:inline-block;width:10px;height:22px;background:var(--red);margin-right:9px;vertical-align:-3px;border-radius:1px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;color:var(--muted);padding:6px 11px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);font-weight:600}
+.seg button:focus-visible,.nav button:focus-visible,select:focus-visible,input:focus-visible,.alert:focus-visible{outline:2px solid var(--sc-base);outline-offset:2px}
+.nav{display:flex;gap:2px;overflow-x:auto;margin-top:8px;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav button{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:500;padding:9px 12px;white-space:nowrap;cursor:pointer;border-bottom:3px solid transparent}
+.nav button[aria-current="page"]{color:var(--ink);border-bottom-color:var(--red);font-weight:600}
+.banner{font-size:12.5px;color:var(--muted);padding:8px 0}
+h2{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:600;margin:18px 0 8px}
+h3{font-size:15px;font-weight:600;margin:0 0 2px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px;min-width:0}
+.g2{display:grid;grid-template-columns:1fr;gap:0 14px}
+@media (min-width:760px){.g2{grid-template-columns:1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)!important}}
+.g4{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px}
+.kpi b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:600;line-height:1.05;font-variant-numeric:tabular-nums}
+.kpi span{color:var(--muted);font-size:13px}
+.kpi small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+svg{width:100%;height:auto;display:block}
+svg .grid{stroke:var(--line);stroke-width:1}
+svg .ax{fill:var(--muted);font-size:11px;font-family:'Barlow',sans-serif}
+svg .vl{fill:var(--ink);font-size:10.5px;font-family:'Barlow',sans-serif;font-weight:500}
+svg .split{stroke:var(--muted);stroke-dasharray:3 3}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted);margin:2px 0 6px}
+.legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:5px;vertical-align:3px}
+.legend i.sq{height:10px;width:10px;vertical-align:-1px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--muted);font-size:12.5px}
+td.h{text-align:center;font-weight:500;color:var(--ink)}
+.na{color:var(--line)}
+select,input[type=number]{font:inherit;font-size:14px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 8px;max-width:100%}
+input[type=number]{width:64px}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+@media (min-width:760px){.filters{grid-template-columns:repeat(4,1fr)}}
+.filters label,.ctl label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:2px}
+.filters select{width:100%}
+.ctl{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:10px}
+.alert{display:flex;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line);cursor:pointer;background:none;border-left:0;border-right:0;border-top:0;width:100%;text-align:left;font:inherit;color:inherit}
+.alert:last-child{border-bottom:0}
+.pill{min-width:28px;text-align:center;border-radius:99px;padding:2px 8px;font-weight:600;font-size:13px;background:var(--soft);color:var(--muted)}
+.pill.on{background:var(--red);color:#fff}
+.alert span.t{flex:1}
+.alert small{display:block;color:var(--muted);font-size:12.5px}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted);margin-left:6px;vertical-align:1px}
+.tag.red{border-color:var(--red);color:var(--red)}
+.note{border-left:3px solid var(--sc-pes);background:var(--soft);padding:8px 10px;font-size:13px;margin:8px 0;border-radius:0 6px 6px 0}
+.hb{display:grid;grid-template-columns:110px 1fr 44px;gap:8px;align-items:center;margin:6px 0;font-size:13.5px}
+.hb div.bar{height:14px;background:var(--soft);border-radius:3px;overflow:hidden}
+.hb div.bar i{display:block;height:100%;background:var(--sc-base)}
+.hb b{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.champ{background:var(--soft);font-weight:600}
+table.pv{font-size:12.5px}
+table.pv th,table.pv td{padding:5px 7px;text-align:right;white-space:nowrap}
+table.pv th:first-child,table.pv td:first-child{position:sticky;left:0;z-index:1;background:var(--surface);text-align:left;white-space:normal;min-width:150px;max-width:190px}
+table.pv tr.mrow td{font-weight:600;background:var(--soft);border-bottom:1px solid var(--sc-base)}
+table.pv td.vn{padding-left:16px}
+table.pv th.pj{color:var(--sc-pes)}
+.vsel{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+@media (min-width:760px){.vsel{grid-template-columns:repeat(4,1fr)}}
+.vb{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:9px;padding:10px 12px;text-align:left;font:inherit;cursor:pointer}
+.vb b{display:block;font-weight:600}.vb span.t{font-size:12.5px;color:var(--muted)}
+.vb[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.vb:focus-visible{outline:2px solid var(--sc-base);outline-offset:2px}
+table.pv .p0{border-left:1px dashed var(--muted)}
+table.pv tr.exc td{color:var(--muted)}
+.seg.wrap{flex-wrap:wrap}
+details.ms{position:relative;margin-bottom:12px}
+details.ms summary{display:inline-block;list-style:none;cursor:pointer;border:1px solid var(--line);border-radius:7px;padding:6px 10px;font-size:14px;background:var(--surface)}
+details.ms summary::-webkit-details-marker{display:none}
+details.ms summary::after{content:' ▾';color:var(--muted)}
+.msb{margin-top:6px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);max-height:300px;overflow:auto;max-width:min(360px,100%)}
+.msb label{display:flex;gap:8px;align-items:center;padding:4px 0;font-size:14px}
+.msa{display:flex;gap:8px;margin-bottom:6px}
+.msa button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:6px;padding:3px 9px;cursor:pointer}
+@media (prefers-reduced-motion:no-preference){.card{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand">
+    <h1><i></i>Plan de Ahorro Toyota</h1>
+    <div class="seg" role="group" aria-label="Escenario" id="scseg"></div>
+  </div>
+  <nav class="nav" id="nav" aria-label="Secciones"></nav>
+</header>
+<div class="banner">Prototipo con datos ilustrativos. Las etiquetas “a definir” marcan lo que sigue pendiente con Toyota.</div>
+<main id="view"></main>
+</div>
+
+<script>
+/* ---------- utilidades ---------- */
+const rng=s=>()=>((s=(s*1664525+1013904223)%4294967296)/4294967296);
+const fmtN=n=>Math.round(n).toLocaleString('es-AR');
+const fmtP=(n,d=1)=>n.toFixed(d).replace('.',',')+'%';
+const fmt1=n=>n.toFixed(1).replace('.',',');
+const MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const ml=i=>{const k=9+i;return MES[k%12]+' '+String(2024+Math.floor(k/12)).slice(2)};
+const HN=24;                       // oct-24 .. sep-26 histórico; luego proyección hasta sep-29
+const L60=[...Array(60)].map((_,i)=>ml(i));
+const hash=s=>[...s].reduce((a,c)=>(a*31+c.charCodeAt(0))%9973,7);
+
+const SC={
+  base:{n:'Base',c:'var(--sc-base)',g:.004,mora:1,ven:1,seed:1},
+  opt:{n:'Optimista',c:'var(--sc-opt)',g:.009,mora:.85,ven:1.12,seed:2},
+  pes:{n:'Pesimista',c:'var(--sc-pes)',g:-.003,mora:1.3,ven:.85,seed:3}
+};
+const S={tab:'home',sc:'base',
+  v:{nivel:'Todos',plan:'Todos',conc:'Todos',uf:'Todas',modelo:'Hilux'},
+  cm:{dim:'cosecha',per:7},
+  mora:{cuota:'separado'},
+  gr:{a:3,b:3},
+  shap:'Caída',cos:[0,1,2,3,4,5,6,7],msOpen:false,cuotas:'pct',convModelo:'Todos',yy:{mes:'Todos',a:2025,b:2026},ver:{modelo:'Yaris',vc:'XS'},dist:{modelo:'Todos',anio:'Todos',medida:'pct',off:[],modo:'rescale',open:false},mv:'ventas',mm:'Mora BCRA'};
+
+/* ---------- datos sintéticos ---------- */
+const H={};
+(function(){const r=rng(7);let v=41200;H.car=[];H.ent=[];
+  for(let i=0;i<HN;i++){v*=1+.0085+(r()-.5)*.004;H.car.push(v);H.ent.push(880+i*6+(r()-.5)*90)}})();
+const PR={};
+function proj(sc){
+  if(PR[sc])return PR[sc];
+  const s=SC[sc],r=rng(11+s.seed);let v=H.car[HN-1];const car=[],ent=[];
+  for(let i=HN;i<60;i++){v*=1+s.g+(r()-.5)*.0015;car.push(v);ent.push(H.ent[HN-1]*s.ven*(1+(i-HN)*.002)+(r()-.5)*60)}
+  return PR[sc]={car:[...H.car,...car],ent:[...H.ent,...ent]};
+}
+const fondos=(i,sc)=>proj(sc).car[i]/1000*.46*(1+.04*Math.sin(i/2.3)); // $ mil millones
+const hp=(arr,k=HN)=>[arr.map((v,i)=>i<k?v:null),arr.map((v,i)=>i>=k-1?v:null)];
+
+const MODELOS=['Hilux','Corolla Cross','Yaris','Corolla'];
+const COSECHAS=['2024-T4','2025-T1','2025-T2','2025-T3','2025-T4','2026-T1','2026-T2','2026-T3'];
+
+function vmod(){
+  const v=S.v,k=[v.nivel,v.plan,v.conc,v.uf].join('|');
+  if(k==='Todos|Todos|Todos|Todas')return 1;
+  return 1+((hash(k)%25)-12)/100;
+}
+function triData(){
+  const m=vmod(),r=rng(21);
+  return COSECHAS.map((c,ci)=>{const row=[];
+    for(let k=1;k<=8;k++){const mo=3*k;
+      row.push(mo<=24-3*ci?Math.min(.6,.42*(1-Math.exp(-mo/16))*m*(1+(r()-.5)*.08)):null)}
+    return row});
+}
+
+/* grupos individuales (≈2.500) */
+let GRP=null;
+function grupos(){
+  if(GRP)return GRP;const r=rng(99);GRP=[];
+  for(let i=0;i<2500;i++){
+    const a=Math.min(14,Math.floor(-Math.log(1-r())*1.2));
+    const b=Math.min(14,Math.floor(-Math.log(1-r())*1.4+(a>2?.8:0)));
+    GRP.push({id:'G-'+(1000+i),plan:['100%','80%','70%'][i%3],a,b,p:8+Math.floor(r()*85)});
+  }return GRP;
+}
+function flagged(){
+  const {a,b}=S.gr;
+  return grupos().filter(g=>g.a>=a||g.b>=b).sort((x,y)=>Math.max(y.a/a,y.b/b)-Math.max(x.a/a,x.b/b));
+}
+
+/* modelos: cuatro variables a predecir. Ventas y mora tienen modelo propio; flujo de fondos y entregas se arman combinándolos */
+const mkBT=(seed,mb,mab,thr,at,add)=>{const r=rng(seed),model=[],ma=[];
+  for(let i=0;i<18;i++){model.push(+(mb*(.7+r()*.6)+(i===at?add:0)).toFixed(2));ma.push(+(mab*(.8+r()*.4)).toFixed(2))}
+  return {model,ma,thr}};
+const MD={
+  ventas:{n:'Planes vendidos',tipo:'propio',fam:'Series de tiempo',mod:'XGBoost con variables macro',alt:'Prophet, Auto-ARIMA y ETS',
+    cortes:[8.4,7.3,6.8,6.2],champ:3,bt:mkBT(3,6.2,9.1,9,14,5),
+    shap:[['Ventas de mercado',.30],['Salario real',.22],['Tipo de cambio',.18],['Estacionalidad',.16],['Inflación',.09],['Promociones',.05]]},
+  'Mora BCRA':{n:'Mora BCRA (90 días)',tipo:'propio',fam:'Probabilidad y supervivencia',mod:'Hazard de riesgo proporcional',alt:'Logístico y Poisson',
+    cortes:[7.9,6.6,5.4,5.9],champ:2,bt:mkBT(5,5.4,7.6,7.5,16,4),
+    shap:[['Cuotas en mora',.36],['Mora BCRA',.24],['% de pago',.17],['Antigüedad',.13],['Plan de ventas',.06]]},
+  'Caída':{n:'Caída (rescindidos y renunciados)',tipo:'propio',fam:'Probabilidad y supervivencia',mod:'Logístico',alt:'Hazard y Poisson',
+    cortes:[6.9,5.8,5.1,4.8],champ:3,bt:mkBT(7,4.8,6.9,7,-1,0),
+    shap:[['Mora BCRA',.31],['Antigüedad',.22],['% de pago',.19],['Cuotas en mora',.15],['Plan de ventas',.08]]},
+  'Mora cuota 1 y 2':{n:'Mora cuota 1 y 2',tipo:'propio',fam:'Probabilidad y supervivencia',mod:'Poisson',alt:'Logístico y Hazard',
+    cortes:[4.9,3.6,3.9,4.2],champ:1,bt:mkBT(9,3.6,5.2,6,-1,0),
+    shap:[['% de pago',.33],['Antigüedad',.25],['Cuotas en mora',.18],['Mora BCRA',.10],['Plan de ventas',.09]]},
+  ff:{n:'Flujo de fondos',tipo:'compuesto',mod:'Compuesto: ventas, mora y compras',mape:7.4,bt:mkBT(11,7.4,10.5,11,14,6),
+    desc:'Los aportes salen de los planes vendidos y de cuánto se cobra (mora y caída). Las compras salen de los autos a entregar. Su error combina el de esos modelos.',
+    comps:[['Planes vendidos','Series de tiempo',6.2,32],['Mora y caída','Probabilidad y supervivencia',5.4,41],['Compra de vehículos','Modelos a entregar',8.9,27]]},
+  ent:{n:'Modelos a entregar',tipo:'compuesto',mod:'Compuesto: fondos, ventas y caída',mape:8.9,bt:mkBT(13,8.9,12.3,13,-1,0),
+    desc:'Los autos a entregar dependen de los fondos disponibles, de los planes que llegan a adjudicación y de qué porcentaje compra cada grupo.',
+    comps:[['Fondos disponibles','Flujo de fondos',7.4,38],['Planes vendidos','Series de tiempo',6.2,22],['Caída','Probabilidad y supervivencia',4.8,15],['% de compra por grupo','Parámetro del especialista',null,25]]}
+};
+const MORAK=['Mora BCRA','Caída','Mora cuota 1 y 2'];
+const mOver=k=>MD[k].bt.model.map((v,i)=>v>MD[k].bt.thr?i:-1).filter(i=>i>=0);
+const btAlerts=()=>Object.keys(MD).filter(k=>mOver(k).length);
+
+/* mora */
+function moraSeries(sc){
+  const r=rng(31),s=SC[sc],n=36,out={bcra:[],resc:[],c1:[],c2:[]};
+  let b=5.0,rc=1.35,c1=3.1,c2=2.4;
+  for(let i=0;i<n;i++){
+    if(i<HN){b+=(r()-.45)*.12;rc+=(r()-.5)*.05;c1+=(r()-.5)*.08;c2+=(r()-.5)*.07}
+    else{const t=(i-HN+1)/12;b=b*(1+.004*(s.mora-.9)*4)+(r()-.5)*.05;rc=rc*(1+.003*(s.mora-.9)*4)+(r()-.5)*.02;c1=c1+(s.mora-1)*.02+(r()-.5)*.03;c2=c2+(s.mora-1)*.015+(r()-.5)*.03}
+    out.bcra.push(b);out.resc.push(rc);out.c1.push(c1);out.c2.push(c2)}
+  return out;
+}
+
+/* ---------- ancho de gráficos ---------- */
+let CWF=340,CWH=340;
+function sizes(){const vw=Math.min(window.innerWidth,1080);CWF=Math.max(260,vw-52);CWH=window.innerWidth<760?CWF:Math.floor((vw-24-14)/2-28)}
+
+/* ---------- gráficos SVG ---------- */
+function line({series,labels,w,h=230,fmt=fmtN,ymin,ymax,split,ticks=4,label='gráfico de líneas',hl}){
+  w=w||CWH;const pl=48,pr=10,pt=12,pb=24;
+  const vals=series.flatMap(s=>s.data).filter(v=>v!=null);
+  let lo=ymin!=null?ymin:Math.min(...vals),hi=ymax!=null?ymax:Math.max(...vals);
+  if(ymin==null){const sp=hi-lo||1;lo-=sp*.1;hi+=sp*.1}
+  const n=labels.length,X=i=>pl+i*(w-pl-pr)/(n-1),Y=v=>pt+(1-(v-lo)/(hi-lo))*(h-pt-pb);
+  let g='';
+  for(let k=0;k<=ticks;k++){const v=lo+(hi-lo)*k/ticks,y=Y(v);
+    g+=`<line x1="${pl}" x2="${w-pr}" y1="${y}" y2="${y}" class="grid"/><text x="${pl-6}" y="${y+4}" text-anchor="end" class="ax">${fmt(v)}</text>`}
+  const ev=Math.ceil(n*46/(w-pl-pr));
+  for(let i=0;i<n;i+=ev)g+=`<text x="${X(i)}" y="${h-6}" text-anchor="middle" class="ax">${labels[i]}</text>`;
+  if(split!=null)g+=`<line x1="${X(split)}" x2="${X(split)}" y1="${pt}" y2="${h-pb}" class="split"/><text x="${X(split)+4}" y="${pt+9}" class="ax">proyección</text>`;
+  if(hl!=null)g+=`<line x1="${pl}" x2="${w-pr}" y1="${Y(hl.v)}" y2="${Y(hl.v)}" style="stroke:var(--red)" stroke-dasharray="4 3"/><text x="${w-pr}" y="${Y(hl.v)-4}" text-anchor="end" class="ax" style="fill:var(--red)">${hl.t}</text>`;
+  for(const s of series){let d='',pen=false;
+    s.data.forEach((v,i)=>{if(v==null){pen=false;return}d+=(pen?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);pen=true});
+    g+=`<path d="${d}" fill="none" style="stroke:${s.color};opacity:${s.op||1}" stroke-width="${s.w||2}" ${s.dash?`stroke-dasharray="${s.dash}"`:''} stroke-linejoin="round" stroke-linecap="round"/>`}
+  return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${label}">${g}</svg>`;
+}
+function bars({labels,series,stacked=false,w,h=220,fmt=fmtN,ymax,fade,vals=false,ticks=4,label='gráfico de barras',rot=false}){
+  w=w||CWH;const pl=48,pr=8,pt=14,pb=rot?40:24,n=labels.length;
+  const tot=labels.map((_,i)=>stacked?series.reduce((a,s)=>a+s.data[i],0):Math.max(...series.map(s=>s.data[i])));
+  const hi=ymax||Math.max(...tot)*1.1,Y=v=>pt+(1-v/hi)*(h-pt-pb);
+  const slot=(w-pl-pr)/n,gap=Math.min(8,slot*.25),bw=stacked?slot-gap:(slot-gap)/series.length;
+  let g='';
+  for(let k=0;k<=ticks;k++){const v=hi*k/ticks,y=Y(v);
+    g+=`<line x1="${pl}" x2="${w-pr}" y1="${y}" y2="${y}" class="grid"/><text x="${pl-6}" y="${y+4}" text-anchor="end" class="ax">${fmt(v)}</text>`}
+  const ev=Math.ceil(n*(rot?20:40)/(w-pl-pr));
+  const acc=labels.map(()=>0);
+  series.forEach((s,si)=>s.data.forEach((v,i)=>{
+    const x=pl+i*slot+gap/2+(stacked?0:si*bw),y0=Y(acc[i]+(stacked?v:v)),hgt=Math.max(0,Y(stacked?acc[i]:0)-y0);
+    const yy=stacked?Y(acc[i]+v):Y(v),hh=stacked?Y(acc[i])-Y(acc[i]+v):Y(0)-Y(v);
+    g+=`<rect x="${x.toFixed(1)}" y="${yy.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0,hh).toFixed(1)}" rx="2" style="fill:${s.color};opacity:${fade&&fade(i)?.45:1}"/>`;
+    if(vals&&!stacked&&n<=14)g+=`<text x="${(x+bw/2).toFixed(1)}" y="${(yy-3).toFixed(1)}" text-anchor="middle" class="vl">${fmt(v)}</text>`;
+    if(stacked)acc[i]+=v}));
+  labels.forEach((l,i)=>{if(i%ev===0){const x=pl+i*slot+slot/2;
+    g+=rot?`<text transform="translate(${x},${h-pb+12}) rotate(-35)" text-anchor="end" class="ax">${l}</text>`:`<text x="${x}" y="${h-6}" text-anchor="middle" class="ax">${l}</text>`}});
+  return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${label}">${g}</svg>`;
+}
+const legend=items=>`<div class="legend">${items.map(([n,c,sq])=>`<span><i class="${sq?'sq':''}" style="background:${c}"></i>${n}</span>`).join('')}</div>`;
+const sel=(id,opts,val,fn,lab)=>`<div><label for="${id}">${lab}</label><select id="${id}" onchange="${fn}(this.value)">${opts.map(o=>`<option ${o===val?'selected':''}>${o}</option>`).join('')}</select></div>`;
+const heat=(v,max=.4)=>`color-mix(in srgb, var(--sc-base) ${Math.round(8+Math.min(1,v/max)*62)}%, var(--surface))`;
+
+/* ---------- vistas ---------- */
+function vHome(){
+  const P=proj(S.sc),act=P.car[HN-1],fut=P.car[HN+11],fo=fondos(HN-1,S.sc);
+  const ent12=H.ent.slice(12).reduce((a,b)=>a+b,0);
+  const al=alertas();const tot=al.reduce((a,x)=>a+x.n,0);
+  const hist=H.car;
+  const ser=[{data:hist.map((v,i)=>i<HN?v:null),color:'var(--ink)',w:2.6}];
+  ['pes','base','opt'].forEach(k=>{const p=proj(k).car.map((v,i)=>i>=HN-1?v:null);
+    ser.push({data:p,color:SC[k].c,dash:'5 4',w:k===S.sc?3:1.6,op:k===S.sc?1:.55})});
+  const ent=P.ent.slice(12,36);
+  return `
+  <div class="g4">
+    <div class="kpi"><span>Planes activos</span><b>${fmtN(act)}</b><small>en 12 meses: ${fmtN(fut)} (${SC[S.sc].n.toLowerCase()})</small></div>
+    <div class="kpi"><span>Fondos disponibles</span><b>$${fmt1(fo)} mil MM</b><small>cierre sep 26</small></div>
+    <div class="kpi"><span>Autos entregados</span><b>${fmtN(ent12)}</b><small>últimos 12 meses</small></div>
+    <div class="kpi"><span>Alertas activas</span><b style="color:${tot?'var(--red)':'inherit'}">${tot}</b><small>en ${al.filter(a=>a.n).length} módulos</small></div>
+  </div>
+  <p class="sub" style="margin-top:6px">Los KPIs ejecutivos definitivos los define y envía Gastón <span class="tag">a definir</span></p>
+  <h2>Evolución de la cartera</h2>
+  <div class="card">
+    <h3>Planes activos, histórico y proyección</h3>
+    <p class="sub">Línea oscura: real. Punteadas: escenarios. Se resalta el escenario elegido arriba.</p>
+    ${legend([['Real','var(--ink)'],['Pesimista',SC.pes.c],['Base',SC.base.c],['Optimista',SC.opt.c]])}
+    ${line({series:ser,labels:L60,w:CWF,h:260,split:HN-1,label:'Evolución de planes activos por escenario'})}
+  </div>
+  <div class="g2">
+    <div class="card">
+      <h3>Autos entregados por mes</h3>
+      <p class="sub">Últimos 12 meses reales y 12 proyectados (${SC[S.sc].n.toLowerCase()}). Barras claras: proyección.</p>
+      ${bars({labels:L60.slice(12,36),series:[{data:ent,color:SC[S.sc].c}],fade:i=>i>=12,rot:true,h:230,label:'Autos entregados por mes'})}
+    </div>
+    <div class="card">
+      <h3>Alertas por módulo</h3>
+      <p class="sub">Tocá un módulo para ir al detalle.</p>
+      ${al.map(a=>`<button class="alert" onclick="go('${a.tab}')"><span class="pill ${a.n?'on':''}">${a.n}</span><span class="t">${a.mod}<small>${a.msg}</small></span></button>`).join('')}
+    </div>
+  </div>`;
+}
+function alertas(){
+  const gf=flagged().length,bt=btAlerts().length;
+  return [
+    {tab:'sim',mod:'Cartera',n:0,msg:'Sin desvíos contra la simulación base'},
+    {tab:'vintage',mod:'Vintage',n:1,msg:'La cosecha 2025-T3 adjudica por debajo de la curva histórica'},
+    {tab:'cambio',mod:'Cambio de modelo',n:1,msg:'Sube el cambio hacia Corolla Cross en la última cosecha'},
+    {tab:'mora',mod:'Caída y mora',n:1,msg:'Mora BCRA proyectada pasa 6% en el escenario pesimista'},
+    {tab:'modelos',mod:'Modelos',n:bt,msg:bt?`${bt} serie(s) con error por encima del umbral`:'Backtesting dentro del umbral'},
+    {tab:'grupos',mod:'Grupos',n:gf,msg:`${fmtN(gf)} de 2.500 grupos con alguna alerta configurada`}
+  ];
+}
+
+function vVintage(){
+  const v=S.v,tri=triData(),mo=[3,6,9,12,15,18,21,24];
+  const colors=COSECHAS.map((_,i)=>`hsl(210,60%,${72-i*6}%)`);
+  const ids=S.cos.slice().sort((a,b)=>a-b);
+  const head=`<tr><th>Cosecha</th>${mo.map(m=>`<th>${m} m</th>`).join('')}</tr>`;
+  const rows=ids.map(i=>`<tr><td>${COSECHAS[i]}</td>${tri[i].map(x=>x==null?'<td class="na">–</td>':`<td class="h" style="background:${heat(x)}">${fmtP(x*100,0)}</td>`).join('')}</tr>`).join('');
+  const msel=`<details class="ms" ${S.msOpen?'open':''} ontoggle="S.msOpen=this.open"><summary>Cosechas: ${ids.length} de ${COSECHAS.length}</summary><div class="msb"><div class="msa"><button onclick="cosAll(true)">Todas</button><button onclick="cosAll(false)">Ninguna</button></div>${COSECHAS.map((c,i)=>`<label><input type="checkbox" ${ids.includes(i)?'checked':''} onchange="cosTog(${i})"> ${c}</label>`).join('')}</div></details>`;
+  const rp=rng(41),act=L60.slice(12,24);
+  const part=act.map(()=>3900+Math.floor(rp()*1500)),gan=part.map(p=>Math.round(p*(.05+rp()*.03)));
+  const rh=rng(hash(v.modelo)),bins=['1-3','4-6','7-9','10-12','13-18','19-24','25+'];
+  const cnt=bins.map((_,i)=>Math.round((40+rh()*30)*Math.exp(-Math.abs(i-2.5)/2.6)));
+  const tot=cnt.reduce((a,b)=>a+b,0),pm=S.cuotas==='pct';
+  const empty='<p class="sub">Elegí al menos una cosecha en el desplegable.</p>';
+  return `
+  <h2>Vintage de cartera y adjudicación</h2>
+  <div class="card">
+    <div class="filters">
+      ${sel('f1',['Todos','Nivel 1','Nivel 2','Nivel 3'],v.nivel,'fNivel','Nivel')}
+      ${sel('f2',['Todos','100%','80%','70%'],v.plan,'fPlan','Tipo de plan')}
+      ${sel('f3',['Todos','Concesionario Norte','Concesionario Centro','Concesionario Cuyo'],v.conc,'fConc','Concesionario')}
+      ${sel('f4',['Todas','Buenos Aires','Córdoba','Santa Fe','Mendoza'],v.uf,'fUf','Unidad federativa')}
+    </div>
+    ${msel}
+    <h3>Triángulo de adjudicación acumulada</h3>
+    <p class="sub">% de los planes de cada cosecha adjudicados, según meses desde el alta.</p>
+    ${ids.length?`<div class="tw"><table>${head}${rows}</table></div>`:empty}
+  </div>
+  <div class="card">
+    <h3>Curva de adjudicación acumulada por cosecha</h3>
+    ${ids.length?legend(ids.map(i=>[COSECHAS[i],colors[i]]))+line({series:ids.map(i=>({data:tri[i].map(x=>x==null?null:x*100),color:colors[i],w:2})),labels:mo.map(m=>m+' m'),w:CWF,h:240,fmt:x=>Math.round(x)+'%',ymin:0,label:'Curva de adjudicación por cosecha'}):empty}
+  </div>
+  <div class="g2">
+    <div class="card"><h3>Participantes por acto</h3>
+      ${bars({labels:act,series:[{data:part,color:'var(--sc-base)'}],rot:true,h:220,label:'Participantes por acto'})}</div>
+    <div class="card"><h3>Ofertas ganadoras por acto</h3>
+      <p class="sub">Gana la oferta con X en la columna “ganador”.</p>
+      ${bars({labels:act,series:[{data:gan,color:'var(--sc-opt)'}],rot:true,h:206,label:'Ofertas ganadoras por acto'})}</div>
+  </div>
+  <div class="card">
+    <h3>Distribución de cuotas de las ofertas ganadoras</h3>
+    <div class="ctl">${sel('fm',MODELOS,v.modelo,'fModelo','Modelo')}
+      <div><label>Mostrar</label><div class="seg"><button aria-pressed="${pm}" onclick="cuotasMode('pct')">Porcentaje</button><button aria-pressed="${!pm}" onclick="cuotasMode('num')">Cantidad</button></div></div></div>
+    ${bars({labels:bins,series:[{data:pm?cnt.map(c=>c/tot*100):cnt,color:'var(--sc-base)'}],w:CWF,h:210,vals:true,fmt:pm?(x=>fmt1(x)+'%'):fmtN,label:'Distribución de cuotas ofertadas'})}
+    <p class="sub">Cuotas ofertadas, en tramos. Total de ofertas ganadoras del modelo: ${fmtN(tot)}.</p>
+  </div>`;
+}
+
+function cmData(){
+  const key=S.cm.dim+S.cm.per,r=rng(hash(key)+3);
+  return MODELOS.map((_,i)=>{const d=.66+r()*.2;const rest=MODELOS.map((_,j)=>j===i?0:.2+r());
+    const s=rest.reduce((a,b)=>a+b,0);return rest.map((x,j)=>j===i?d:x/s*(1-d))});
+}
+const VERS={Hilux:['DX','SR','SRV'],'Corolla Cross':['XEI','SEG','HEV'],Yaris:['XS','XLS','Automático'],Corolla:['XLI','XEI','SEG']};
+function verMatrix(m){
+  const r=rng(hash(S.cm.dim+S.cm.per+m)+5);
+  return VERS[m].map((_,i)=>{const d=.72+r()*.14;const rest=VERS[m].map((_,j)=>j===i?0:.3+r());const s=rest.reduce((a,b)=>a+b,0);return rest.map((x,j)=>j===i?d:x/s*(1-d))});
+}
+function verCards(){
+  const vm=S.ver.modelo,vers=VERS[vm];if(!vers.includes(S.ver.vc))S.ver.vc=vers[0];
+  const vc=S.ver.vc,VM=verMatrix(vm),chg=VM.reduce((a,r,i)=>a+(1-r[i]),0)/vers.length*100;
+  return `
+  <div class="card">
+    <h3>Cambio de versión dentro del mismo modelo</h3>
+    <p class="sub">Sobre los clientes que retiraron ese modelo, qué versión retiraron respecto de la que contrataron. Cambio promedio de versión: <b>${fmtP(chg)}</b></p>
+    <div class="ctl">${sel('vm1',MODELOS,vm,'verModelo','Modelo')}</div>
+    <div class="tw"><table>
+      <tr><th>Contratada ↓ / Retirada →</th>${vers.map(v=>`<th>${v}</th>`).join('')}</tr>
+      ${VM.map((r,i)=>`<tr><td>${vers[i]}</td>${r.map((x,j)=>`<td class="h" style="background:${i===j?'var(--soft)':heat(x,.2)}">${fmtP(x*100,0)}</td>`).join('')}</tr>`).join('')}
+    </table></div>
+    <p class="sub" style="margin-top:6px">Las versiones son de ejemplo, a confirmar con el catálogo de Toyota <span class="tag">a definir</span></p>
+  </div>`;
+}
+function mixYY(y,mes){
+  const k=y-2024,r=rng(hash(''+y+mes)+9);
+  const w=[.38+k*.015,.24+k*.02,.22-k*.02,.16-k*.015].map(x=>x+(r()-.5)*.04),s=w.reduce((a,b)=>a+b,0);
+  return w.map(x=>x/s*100);
+}
+function hayDatos(y,mes){if(mes==='Todos')return true;const k=MES.indexOf(mes);if(y===2024)return k>=9;if(y===2026)return k<=8;return true}
+function vCambio(){
+  const dim=S.cm.dim;
+  const per=dim==='cosecha'?COSECHAS:['2025-T1','2025-T2','2025-T3','2025-T4','2026-T1','2026-T2','2026-T3','2026-T4*'];
+  const M=cmData(),chg=M.reduce((a,r,i)=>a+(1-r[i]),0)/MODELOS.length*100;
+  const trend=per.map((p,i)=>{const r=rng(hash(dim+i)+3);let t=0;for(let a=0;a<4;a++){const d=.66+r()*.2;for(let j=0;j<3;j++)r();t+=1-d}return t/4*100});
+  const {mes,a,b}=S.yy,okA=hayDatos(a,mes),okB=hayDatos(b,mes),mA=mixYY(a,mes),mB=mixYY(b,mes);
+  const yrs=['2024','2025','2026'];
+  return `
+  <h2>Cambio de modelo</h2>
+  <div class="card">
+    <div class="ctl">
+      <div><label>Ver por</label><div class="seg"><button aria-pressed="${dim==='cosecha'}" onclick="cmDim('cosecha')">Cosecha</button><button aria-pressed="${dim==='fecha'}" onclick="cmDim('fecha')">Fecha de adjudicación</button></div></div>
+      ${sel('cp',per,per[S.cm.per],'cmPer',dim==='cosecha'?'Cosecha':'Trimestre de adjudicación')}
+    </div>
+    <div class="note">Métrica: clientes que cambiaron de modelo ÷ clientes que retiraron el auto. No se calcula sobre planes activos.</div>
+    <h3>Matriz de modelo contratado y modelo retirado</h3>
+    <p class="sub">Cada fila suma 100% de los retiros de ese modelo contratado. Cambio total del período: <b>${fmtP(chg)}</b></p>
+    <div class="tw"><table>
+      <tr><th>Contratado ↓ / Retirado →</th>${MODELOS.map(m=>`<th>${m}</th>`).join('')}</tr>
+      ${M.map((r,i)=>`<tr><td>${MODELOS[i]}</td>${r.map((x,j)=>`<td class="h" style="background:${i===j?'var(--soft)':heat(x,.2)}">${fmtP(x*100,0)}</td>`).join('')}</tr>`).join('')}
+    </table></div>
+  </div>
+  <div class="card">
+    <h3>% de cambio de modelo por ${dim==='cosecha'?'cosecha':'trimestre de adjudicación'}</h3>
+    ${line({series:[{data:trend,color:'var(--sc-base)',w:2.5}],labels:per,w:CWF,h:200,fmt:x=>Math.round(x)+'%',ymin:0,label:'Evolución del cambio de modelo'})}
+  </div>
+  ${verCards()}
+  <div class="card">
+    <h3>Comparativa año contra año: mix de modelos retirados</h3>
+    <p class="sub">Elegí un mes (o todo el año) y los dos años a comparar para ver la tendencia del mix.</p>
+    <div class="ctl">${sel('ym',['Todos',...MES],mes,'yyMes','Mes')}${sel('ya',yrs,String(a),'yyA','Año A')}${sel('yb',yrs,String(b),'yyB','Año B')}</div>
+    ${(okA&&okB)?`
+    ${legend([[String(a),'var(--muted)',1],[String(b),'var(--sc-base)',1]])}
+    ${bars({labels:MODELOS,series:[{data:mA,color:'var(--muted)'},{data:mB,color:'var(--sc-base)'}],w:CWF,h:210,vals:true,fmt:x=>Math.round(x)+'%',label:'Mix de modelos, año contra año'})}
+    <div class="tw"><table><tr><th>Modelo</th><th>${a}</th><th>${b}</th><th>Variación (pp)</th></tr>
+    ${MODELOS.map((m,i)=>{const d=mB[i]-mA[i];return `<tr><td>${m}</td><td>${fmtP(mA[i])}</td><td>${fmtP(mB[i])}</td><td style="color:${d>=0?'var(--sc-opt)':'var(--red)'}">${(d>=0?'+':'−')+fmt1(Math.abs(d))}</td></tr>`}).join('')}</table></div>`
+    :`<div class="note">No hay datos de ${!okA?a:b} para ese mes. El histórico va de oct 24 a sep 26.</div>`}
+  </div>`;
+}
+
+function vConv(){
+  const mm=S.convModelo,m=mm==='Todos'?1:1+((hash(mm)%21)-10)/100;
+  const tri=triData(),adj=tri.map(r=>{const v=r.filter(x=>x!=null);return Math.min(60,v[v.length-1]*100*m)});
+  const baj=COSECHAS.map((_,i)=>8-i*.6+(7-i)*1.1+3),ah=adj.map((a,i)=>100-a-baj[i]);
+  const r=rng(61+hash(mm)),act=L60.slice(12,24),pos=act.map(()=>(mm==='Todos'?110:50)+Math.floor(r()*30)),ok=pos.map(p=>Math.round(p*(.3+r()*.14)));
+  const rate=ok.map((o,i)=>o/pos[i]*100),last=act.length-1;
+  return `
+  <h2>Tasa de conversión</h2>
+  <div class="ctl"><div><label>Modelo</label><div class="seg wrap" role="group" aria-label="Modelo">${['Todos',...MODELOS].map(x=>`<button aria-pressed="${x===mm}" onclick="convModelo('${x}')">${x}</button>`).join('')}</div></div></div>
+  <div class="card">
+    <h3>Conversión de cartera</h3>
+    <p class="sub">% de adjudicados contra % de ahorristas que siguen en el plan, por cosecha. Los ahorristas son el potencial futuro de adjudicación.</p>
+    ${legend([['Adjudicados','var(--sc-opt)',1],['Ahorristas (potencial futuro)','var(--sc-base)',1],['Bajas','var(--line)',1]])}
+    ${bars({labels:COSECHAS,series:[{data:adj,color:'var(--sc-opt)'},{data:ah,color:'var(--sc-base)'},{data:baj,color:'var(--line)'}],stacked:true,w:CWF,h:230,ymax:100,fmt:x=>Math.round(x)+'%',label:'Conversión de cartera por cosecha'})}
+  </div>
+  <div class="card">
+    <h3>Efectividad comercial por acto de adjudicación</h3>
+    <p class="sub">Casos exitosos ÷ casos posibles en cada acto. Último acto: ${ok[last]} de ${pos[last]} (${fmtP(rate[last])}).</p>
+    ${bars({labels:act,series:[{data:rate,color:'var(--sc-base)'}],w:CWF,h:220,fmt:x=>Math.round(x)+'%',rot:true,label:'Efectividad comercial por acto'})}
+  </div>`;
+}
+
+const vtc=(k,i)=>1480*Math.pow(1+{base:.011,opt:.007,pes:.019}[k],i);
+const vinf=(k,i)=>{const f={base:1.5,opt:1.1,pes:2.4}[k];return f+(2.1-f)*Math.exp(-i/12)};
+const vsal=(k,i)=>100*(1+{base:.002,opt:.005,pes:-.002}[k]*i);
+const vven=(k,i)=>38*SC[k].ven*(1+.002*i)*(1+.06*Math.sin(i/1.9));
+(function(){const r=rng(55);H.pv=[...Array(HN)].map((_,i)=>640+i*5+(r()-.5)*70)})();
+const pvF=(k,i)=>i<HN?H.pv[i]:H.pv[HN-1]*(1+(SC[k].ven-1)*Math.min(1,(i-HN+1)/12))*(1+.002*(i-HN))*(1+.05*Math.sin(i/1.7));
+const apF=(k,i)=>proj(k).car[i]*.0004*(i<HN?1:1-(SC[k].mora-1)*.05);   // aportes mensuales, $ mil MM
+const coF=(k,i)=>proj(k).ent[i]*.0185;                                   // compras de vehículos, $ mil MM
+const MSH={Hilux:.40,'Corolla Cross':.25,Yaris:.20,Corolla:.15};
+function modUnits(sc,i){const w=MODELOS.map((m,j)=>MSH[m]*(1+.04*Math.sin(i/2+j))),s=w.reduce((a,b)=>a+b,0);return w.map(x=>proj(sc).ent[i]*x/s)}
+function vSim(){
+  const sc=S.sc,idx=[...Array(60)].map((_,i)=>i),L36=Array.from({length:36},(_,i)=>ml(i));
+  const scS=f=>{const s=[{data:idx.map(i=>i<HN?f('base',i):null),color:'var(--ink)',w:2.6}];
+    ['pes','base','opt'].forEach(k=>s.push({data:idx.map(i=>i>=HN-1?f(k,i):null),color:SC[k].c,dash:'5 4',w:k===sc?3:1.6,op:k===sc?1:.55}));return s};
+  const LG3=legend([['Real','var(--ink)'],['Pesimista',SC.pes.c],['Base',SC.base.c],['Optimista',SC.opt.c]]);
+  const sum=(f,a,b)=>idx.slice(a,b).reduce((x,i)=>x+f(i),0);
+  /* escenarios */
+  const esc=[
+    ['Tipo de cambio','Sigue el REM del BCRA','Sube menos que el REM','Sube más que el REM, con saltos'],
+    ['Inflación','Según REM','Baja más rápido','Se estanca arriba del REM'],
+    ['Salario real','Estable','Recupera','Cae'],
+    ['Ventas de mercado','Tendencia actual','+12%','−15%'],
+    ['Mora y caída','Sin cambios','−15%','+30%'],
+    ['Crecimiento mensual de cartera','+0,4%','+0,9%','−0,3%']];
+  const pl=L60.slice(HN),n=36;
+  const vs=(f,fm,tt)=>`<div class="card"><h3>${tt}</h3>${line({series:['pes','base','opt'].map(k=>({data:[...Array(n)].map((_,i)=>f(k,i)),color:SC[k].c,w:k===sc?3:1.8,op:k===sc?1:.6})),labels:pl,fmt:fm,h:200,label:tt+' por escenario'})}</div>`;
+  /* planes vendidos */
+  const pvH=sum(i=>H.pv[i],12,HN),pvP=sum(i=>pvF(sc,i),HN,HN+12);
+  /* flujo de fondos */
+  const fut=idx.slice(HN,HN+12).map(i=>fondos(i,sc)),mn=Math.min(...fut),mi=HN+fut.indexOf(mn);
+  const neto=(k,i)=>apF(k,i)-coF(k,i);
+  /* modelos a entregar */
+  const pal=['var(--sc-base)','var(--sc-opt)','var(--sc-pes)','#7A5BA6'];
+  const mdl=MODELOS.map((m,j)=>[...Array(12)].map((_,t)=>modUnits(sc,HN+t)[j]));
+  const hz=h=>MODELOS.map((_,j)=>mdl[j].slice(0,h).reduce((a,b)=>a+b,0));
+  const h3=hz(3),h6=hz(6),h12=hz(12),tt=a=>a.reduce((x,y)=>x+y,0);
+  /* mora */
+  const mo={base:moraSeries('base'),opt:moraSeries('opt'),pes:moraSeries('pes')};
+  const mser=get=>{const s=[{data:get(mo.base).map((v,i)=>i<HN?v:null),color:'var(--ink)',w:2.6}];
+    ['pes','base','opt'].forEach(k=>s.push({data:get(mo[k]).map((v,i)=>i>=HN-1?v:null),color:SC[k].c,dash:'5 4',w:k===sc?3:1.6,op:k===sc?1:.55}));return s};
+  /* cartera */
+  const cidx=[26,38,50,59],clab=['dic 26','dic 27','dic 28','sep 29'];
+  const comp=k=>{const s=SC[k],P=proj(k).car;
+    const mora=i=>.03*s.mora*(1+(i-26)*.004),bc=i=>.05*s.mora*(1+(i-26)*.003),ad=.07;
+    return {m:cidx.map(i=>P[i]*mora(i)),b:cidx.map(i=>P[i]*bc(i)),a:cidx.map(i=>P[i]*ad),d:cidx.map(i=>P[i]*(1-mora(i)-bc(i)-ad))}};
+  const r=rng(77),tri=triData(),rows=COSECHAS.map((c,i)=>{const t=tri[i].filter(x=>x!=null);const adj=t[t.length-1]*100;
+    return `<tr><td>${c}</td><td>${fmtN(2900+r()*900)}</td><td>${fmtP(adj)}</td><td>${fmtP(6+r()*3)}</td><td>${fmt1(9+(7-i)*2.8+r())}</td><td>${fmt1(1.1+(7-i)*.6+r())}</td></tr>`}).join('');
+  return `
+  <h2>Simulación y escenarios</h2>
+  <p class="sub">Elegí el escenario arriba: se resalta en cada gráfico. Primero los supuestos de cada escenario y las variables macro proyectadas; más abajo, todo lo que el modelo proyecta a partir de ellos.</p>
+  <div class="card">
+    <h3>Qué cambia en cada escenario</h3>
+    <div class="tw"><table><tr><th>Variable</th><th style="color:${SC.base.c}">Base</th><th style="color:${SC.opt.c}">Optimista</th><th style="color:${SC.pes.c}">Pesimista</th></tr>
+    ${esc.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td></tr>`).join('')}</table></div>
+    <p class="sub" style="margin-top:6px">Supuestos ilustrativos. Los reales vienen de la parametría de shocks.</p>
+  </div>
+  <h2>Variables macro proyectadas</h2>
+  ${legend([['Base',SC.base.c],['Optimista',SC.opt.c],['Pesimista',SC.pes.c]])}
+  <div class="g2">
+    ${vs(vtc,fmtN,'Tipo de cambio ($/USD)')}
+    ${vs(vinf,x=>fmt1(x)+'%','Inflación mensual')}
+    ${vs(vsal,x=>Math.round(x),'Salario real (índice, sep 26 = 100)')}
+    ${vs(vven,x=>fmt1(x),'Ventas de mercado (miles de unidades por mes)')}
+  </div>
+
+  <h2>Variables proyectadas</h2>
+  <div class="card">
+    <h3>Planes vendidos</h3>
+    <p class="sub">Planes nuevos por mes. Últimos 12 meses reales: <b>${fmtN(pvH)}</b>. Próximos 12 meses (${SC[sc].n.toLowerCase()}): <b>${fmtN(pvP)}</b>.</p>
+    ${LG3}
+    ${line({series:scS(pvF),labels:L60,w:CWF,h:230,fmt:fmtN,split:HN-1,label:'Planes vendidos por escenario'})}
+  </div>
+  <div class="card">
+    <h3>Flujo de fondos</h3>
+    <p class="sub">En $ mil millones. Fondos disponibles por escenario. Mínimo de los próximos 12 meses (${SC[sc].n.toLowerCase()}): <b>$${fmt1(mn)} mil MM</b> en ${ml(mi)}.</p>
+    ${LG3}
+    ${line({series:scS((k,i)=>fondos(i,k)),labels:L60,w:CWF,h:240,fmt:fmt1,split:HN-1,label:'Fondos disponibles por escenario'})}
+    <div class="note">El cálculo de fondos por grupo depende del % de compra por tipo de plan y nivel de amortización. Se define con el especialista en proyecciones <span class="tag">a definir</span></div>
+  </div>
+  <div class="g2">
+    <div class="card"><h3>Aportes y compras por mes</h3>
+      <p class="sub">Escenario ${SC[sc].n.toLowerCase()}, en $ mil MM.</p>
+      ${legend([['Aportes de cuotas','var(--sc-opt)'],['Compra de vehículos','var(--sc-pes)']])}
+      ${line({series:[{data:idx.map(i=>apF(sc,i)),color:'var(--sc-opt)',w:2.4},{data:idx.map(i=>coF(sc,i)),color:'var(--sc-pes)',w:2.4}],labels:L60,fmt:fmt1,split:HN-1,h:220,label:'Aportes y compras por mes'})}</div>
+    <div class="card"><h3>Flujo neto por escenario</h3>
+      <p class="sub">Aportes menos compras, en $ mil MM por mes.</p>
+      ${LG3}
+      ${line({series:scS(neto),labels:L60,fmt:fmt1,split:HN-1,h:206,label:'Flujo neto por escenario'})}</div>
+  </div>
+  <div class="card">
+    <h3>Modelos a entregar</h3>
+    <p class="sub">Autos a entregar por modelo en los próximos 12 meses, escenario ${SC[sc].n.toLowerCase()}.</p>
+    ${legend(MODELOS.map((m,j)=>[m,pal[j],1]))}
+    ${bars({labels:L60.slice(HN,HN+12),series:MODELOS.map((m,j)=>({data:mdl[j],color:pal[j]})),stacked:true,w:CWF,h:230,rot:true,label:'Modelos a entregar por mes'})}
+    <div class="tw" style="margin-top:8px"><table><tr><th>Modelo</th><th>Próximos 3 m</th><th>Próximos 6 m</th><th>Próximos 12 m</th></tr>
+    ${MODELOS.map((m,j)=>`<tr><td>${m}</td><td>${fmtN(h3[j])}</td><td>${fmtN(h6[j])}</td><td>${fmtN(h12[j])}</td></tr>`).join('')}
+    <tr class="champ"><td>Total</td><td>${fmtN(tt(h3))}</td><td>${fmtN(tt(h6))}</td><td>${fmtN(tt(h12))}</td></tr></table></div>
+    <div class="note">El pedido sugerido por versión se suma acá, tomando como input la distribución de autos <span class="tag">a definir</span></div>
+  </div>
+  <div class="g2">
+    <div class="card"><h3>Mora BCRA</h3>
+      <p class="sub">% de cartera, por escenario.</p>
+      ${LG3}
+      ${line({series:mser(m=>m.bcra),labels:L36,fmt:x=>fmt1(x)+'%',split:HN-1,ymin:0,h:220,label:'Mora BCRA por escenario'})}</div>
+    <div class="card"><h3>Mora cuota 1 y 2</h3>
+      <p class="sub">% de cartera, por escenario (cuotas combinadas).</p>
+      ${LG3}
+      ${line({series:mser(m=>m.c1.map((v,i)=>(v+m.c2[i])/2)),labels:L36,fmt:x=>fmt1(x)+'%',split:HN-1,ymin:0,h:220,label:'Mora cuota 1 y 2 por escenario'})}</div>
+  </div>
+  <p class="sub"><a href="#" style="color:var(--sc-base)" onclick="go('mora');return false">Ver el detalle de caída, curación y mora</a></p>
+  <div class="card">
+    <h3>Composición de cartera proyectada</h3>
+    <p class="sub">Los tres escenarios. Cantidad de planes por estado.</p>
+    ${legend([['Al día','var(--sc-base)',1],['Adjudicados sin retirar','var(--sc-opt)',1],['Mora BCRA','var(--red)',1],['Mora cuota 1 y 2','var(--sc-pes)',1]])}
+  </div>
+  <div class="g2" style="margin-top:-14px">
+  ${['base','opt','pes'].map(k=>{const c=comp(k);return `<div class="card"><h3>Escenario ${SC[k].n.toLowerCase()}</h3>
+    ${bars({labels:clab,series:[{data:c.d,color:'var(--sc-base)'},{data:c.a,color:'var(--sc-opt)'},{data:c.b,color:'var(--red)'},{data:c.m,color:'var(--sc-pes)'}],stacked:true,h:210,ymax:75000,label:'Composición de cartera, escenario '+SC[k].n.toLowerCase()})}</div>`}).join('')}
+  </div>
+  <div class="card">
+    <h3>Estadísticas de cosecha</h3>
+    <div class="tw"><table><tr><th>Cosecha</th><th>Planes</th><th>Adjudicados</th><th>Caída (rescindidos)</th><th>Cuotas pagadas (prom.)</th><th>Fondos aportados ($ mil MM)</th></tr>${rows}</table></div>
+  </div>`;
+}
+
+function renderGrupos(){
+  const f=flagged(),{a,b}=S.gr,gA=grupos().filter(g=>g.a>=a).length,gB=grupos().filter(g=>g.b>=b).length;
+  return `<div class="g4" style="margin-top:0">
+    <div class="kpi"><span>Grupos con alerta</span><b style="color:var(--red)">${fmtN(f.length)}</b><small>de 2.500</small></div>
+    <div class="kpi"><span>Sin autos</span><b>${fmtN(gA)}</b><small>${a} meses o más</small></div>
+    <div class="kpi"><span>Sin aceptación</span><b>${fmtN(gB)}</b><small>${b} meses o más</small></div>
+    <div class="kpi"><span>% de grupos</span><b>${fmtP(f.length/25)}</b><small>con alguna alerta</small></div></div>
+  <div class="tw" style="margin-top:10px"><table><tr><th>Grupo</th><th>Plan</th><th>Meses sin autos</th><th>Meses sin aceptación</th><th>Participantes</th><th>Alerta</th></tr>
+  ${f.slice(0,15).map(g=>`<tr><td>${g.id}</td><td>${g.plan}</td><td>${g.a}</td><td>${g.b}</td><td>${g.p}</td><td>${[g.a>=a?'<span class="tag red">sin autos</span>':'',g.b>=b?'<span class="tag red">sin aceptación</span>':''].join('')}</td></tr>`).join('')}</table></div>
+  <p class="sub" style="margin-top:6px">Se muestran los 15 grupos más críticos.</p>`;
+}
+function vGrupos(){
+  return `
+  <h2>Detalle de grupos</h2>
+  <p class="sub">Pensado para los 2.000–3.000 grupos individuales. Los umbrales viven en la parametría.</p>
+  <div class="card">
+    <div class="ctl">
+      <div><label for="ga">Alerta: meses sin autos</label><input id="ga" type="number" min="1" max="12" value="${S.gr.a}" oninput="grSet('a',this.value)"></div>
+      <div><label for="gb">Alerta: meses sin aceptación</label><input id="gb" type="number" min="1" max="12" value="${S.gr.b}" oninput="grSet('b',this.value)"></div>
+    </div>
+    <div id="gres">${renderGrupos()}</div>
+  </div>`;
+}
+
+function vMora(){
+  const m=moraSeries(S.sc),L=L60.slice(HN-24+0,HN+12).map((_,i)=>ml(i));
+  const comb=m.c1.map((v,i)=>(v+m.c2[i])/2);
+  const sp=(a,c,l,w=2.4)=>({data:a,color:c,w});
+  const ser=[sp(m.bcra,'var(--sc-base)'),sp(m.resc,'var(--red)')];
+  if(S.mora.cuota==='separado'){ser.push({data:m.c1,color:'var(--sc-pes)',w:2.2},{data:m.c2,color:'var(--sc-opt)',w:2.2})}
+  else ser.push({data:comb,color:'var(--sc-pes)',w:2.4});
+  const lg=[['Mora BCRA (90 días)','var(--sc-base)'],['Caída (rescindidos y renunciados)','var(--red)']];
+  if(S.mora.cuota==='separado')lg.push(['Mora cuota 1','var(--sc-pes)'],['Mora cuota 2','var(--sc-opt)']);else lg.push(['Mora cuota 1 y 2','var(--sc-pes)']);
+  const ref=['Mes 1','Mes 2','Mes 3'],real=[15,20,30],mod=[14.2,20.9,29.1];
+  return `
+  <h2>Caída y mora</h2>
+  <div class="note">“Caída” reemplaza al término “incumplimiento” del modelo: equivale a renunciado o rescindido en la terminología de Toyota (3 meses sin pago). “Mora” mantiene su nombre.</div>
+  <div class="card">
+    <h3>Tres métricas proyectadas, % de cartera</h3>
+    <p class="sub">Escenario ${SC[S.sc].n.toLowerCase()}. A la derecha de la línea punteada, proyección.</p>
+    <div class="ctl"><div><label>Mora cuota 1 y 2</label><div class="seg"><button aria-pressed="${S.mora.cuota==='separado'}" onclick="moraC('separado')">Separadas</button><button aria-pressed="${S.mora.cuota==='combinado'}" onclick="moraC('combinado')">Combinadas</button></div></div></div>
+    ${legend(lg)}
+    ${line({series:ser,labels:Array.from({length:36},(_,i)=>ml(i)),w:CWF,h:250,fmt:x=>fmt1(x)+'%',split:HN-1,ymin:0,label:'Mora y caída proyectadas'})}
+  </div>
+  <div class="g2">
+    <div class="card">
+      <h3>Tasa de curación</h3>
+      <p class="sub">Rescindidos que se reconvierten a otro estado.</p>
+      <div class="kpi" style="border:0;padding:0"><b>${fmtP(6.8)}</b><small>referencia ilustrativa</small></div>
+      <div class="note">Se calcula con los 63 códigos de situación de cobro, identificando quiénes pasan de rescindido a otro estado. Falta el listado de Camila y Gastón <span class="tag">a definir</span></div>
+    </div>
+    <div class="card">
+      <h3>Chequeo de sanidad del backtest</h3>
+      <p class="sub">Caída acumulada de cartera contra la referencia histórica.</p>
+      ${legend([['Referencia histórica','var(--ink)',1],['Modelo','var(--sc-base)',1]])}
+      ${bars({labels:ref,series:[{data:real,color:'var(--ink)'},{data:mod,color:'var(--sc-base)'}],vals:true,h:200,fmt:x=>Math.round(x)+'%',label:'Caída acumulada de cartera, referencia y modelo'})}
+    </div>
+  </div>`;
+}
+
+function vModelos(){
+  const lab=Array.from({length:18},(_,i)=>ml(HN-18+i));
+  const mp=d=>d.mape!=null?d.mape:d.cortes[d.champ];
+  const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+  const curKey=S.mv==='mora'?S.mm:S.mv,cur=MD[curKey];
+  const alOf=k=>k==='mora'?MORAK.reduce((a,x)=>a+mOver(x).length,0):mOver(k).length;
+  const rowFor=k=>{const d=MD[k],m=mp(d),ma=avg(d.bt.ma),al=mOver(k).length,isM=MORAK.includes(k);
+    return `<tr style="cursor:pointer" class="${k===curKey?'champ':''}" onclick="mvSel('${isM?'mora':k}','${isM?k:''}')"><td>${d.n}</td><td>${d.mod}</td><td>${fmtP(m)}</td><td>${fmtP(ma)}</td><td style="color:var(--sc-opt)">−${fmt1((ma-m)/ma*100)}%</td><td>${al?`<span class="tag red">${al}</span>`:'0'}</td></tr>`};
+  const boxes=[['ventas','Planes vendidos','Modelo propio'],['mora','Mora y caída','Modelo propio'],['ff','Flujo de fondos','Combina ventas y mora'],['ent','Modelos a entregar','Combina fondos, ventas y caída']];
+  const ov=mOver(curKey);
+  const btCard=`<div class="card"><h3>Backtesting mensual</h3>
+      <p class="sub">Error absoluto del modelo contra el promedio móvil. ${ov.length?`<b style="color:var(--red)">${ov.length} mes(es) sobre el umbral de ${cur.bt.thr}%: ${ov.map(i=>lab[i]).join(', ')}.</b>`:`Sin meses sobre el umbral de ${cur.bt.thr}%.`}</p>
+      ${legend([['Modelo','var(--sc-base)'],['Promedio móvil','var(--muted)']])}
+      ${line({series:[{data:cur.bt.ma,color:'var(--muted)',w:2,dash:'4 3'},{data:cur.bt.model,color:'var(--sc-base)',w:2.6}],labels:lab,fmt:x=>fmt1(x)+'%',ymin:0,ymax:Math.ceil(cur.bt.thr*1.5),hl:{v:cur.bt.thr,t:'umbral '+cur.bt.thr+'%'},h:220,label:'Backtesting de '+cur.n})}</div>`;
+  let det;
+  if(cur.tipo==='propio'){
+    const mx=Math.max(...cur.shap.map(x=>x[1]));
+    det=`
+    ${S.mv==='mora'?`<div class="ctl"><div><label>Métrica de mora</label><div class="seg wrap">${MORAK.map(k=>`<button aria-pressed="${k===S.mm}" onclick="mvSel('mora','${k}')">${MD[k].n.replace(/ \(.*\)/,'')}</button>`).join('')}</div></div></div>`:''}
+    <div class="card">
+      <h3>Selección de variables y modelo campeón: ${cur.n}</h3>
+      <p class="sub">Familia: ${cur.fam.toLowerCase()}. Alternativas evaluadas: ${cur.alt}. El campeón queda fijo unos 6 meses, con ventana rolling de 6 meses. Próxima reselección: ene 27.</p>
+      <div class="tw"><table><tr><th>Corte</th><th>Error (MAPE)</th><th>Estado</th></tr>
+      ${['Corte 1: todas las variables','Corte 2: PCA','Corte 3: mejor predictor','Corte 4: PCA y mejor predictor'].map((c,i)=>`<tr class="${i===cur.champ?'champ':''}"><td>${c}</td><td>${fmtP(cur.cortes[i])}</td><td>${i===cur.champ?'Campeón: '+cur.mod:'Desafiante'}</td></tr>`).join('')}</table></div>
+    </div>
+    <div class="g2">
+      <div class="card"><h3>Importancia de variables (SHAP)</h3>
+        <p class="sub">Qué pesa en el modelo de ${cur.n.replace(/ \(.*\)/,'').toLowerCase()}.</p>
+        ${cur.shap.map(x=>`<div class="hb"><span>${x[0]}</span><div class="bar"><i style="width:${x[1]/mx*100}%"></i></div><b>${fmt1(x[1]*100)}%</b></div>`).join('')}</div>
+      ${btCard}
+    </div>`;
+  }else{
+    det=`
+    <div class="card">
+      <h3>Qué alimenta a ${cur.n.toLowerCase()}</h3>
+      <p class="sub">${cur.desc}</p>
+      <div class="tw"><table><tr><th>Componente</th><th>Modelo</th><th>Error propio</th><th>Peso en el error</th></tr>
+      ${cur.comps.map(c=>`<tr><td>${c[0]}</td><td>${c[1]}</td><td>${c[2]==null?'<span class="tag">a definir</span>':fmtP(c[2])}</td><td>${c[3]}%</td></tr>`).join('')}</table></div>
+      <div class="note">Este resultado no tiene selección de variables propia: se recalcula cuando cambia el campeón de alguno de sus componentes.</div>
+    </div>
+    ${btCard}`;
+  }
+  return `
+  <h2>Performance de modelos</h2>
+  <p class="sub">Son cuatro variables a predecir y cada una se evalúa por separado. Planes vendidos y mora tienen su propio modelo; flujo de fondos y modelos a entregar se arman combinando los resultados de los anteriores.</p>
+  <div class="card">
+    <h3>Comparativa por variable</h3>
+    <p class="sub">Tocá una fila para ver su detalle. Error de los últimos 18 meses contra el promedio móvil.</p>
+    <div class="tw"><table><tr><th>Variable</th><th>Modelo</th><th>Error (MAPE)</th><th>Promedio móvil</th><th>Diferencia</th><th>Alertas</th></tr>
+    ${['ventas',...MORAK,'ff','ent'].map(rowFor).join('')}</table></div>
+  </div>
+  <div class="vsel">${boxes.map(([k,n,t])=>{const al=alOf(k);return `<button class="vb" aria-pressed="${S.mv===k}" onclick="mvSel('${k}')"><b>${n}${al?` <span class="pill on">${al}</span>`:''}</b><span class="t">${t}</span></button>`}).join('')}</div>
+  ${det}`;
+}
+
+/* ---------- distribución de autos (tabla tipo dinámica) ---------- */
+const CAT={
+  'Corolla Cross':['COROLLA CROSS XLI 2.0 CVT','COROLLA CROSS XEI 2.0 CVT','COROLLA CROSS SEG 2.0 CVT','COROLLA CROSS HEV 1.8 XEI ECVT','COROLLA CROSS HEV 1.8 SEG ECVT'],
+  'Corolla':['COROLLA 2.0 SEG CVT','COROLLA 2.0 XEI CVT','COROLLA 2.0 XLI CVT','COROLLA GR-SPORT 2.0 CVT','COROLLA HEV 1.8 SEG ECVT','COROLLA HEV 1.8 XEI CVT'],
+  'Hiace':['COMMUTER 2.8 TDI 6AT 14A ARS','FURGÓN L2H2 2.8 TDI 6AT 3A ARS','HIACE FURGÓN L1H1 2.8 TDI 6AT 3A','HIACE WAGON 2.8 TDI 6AT 10A'],
+  'Hilux':['HILUX 4X2 CC DX 2.4 TDI 6 MT','HILUX 4X2 CS DX 2.4 TDI 6 MT','HILUX 4X2 CD SR 2.8 TDI 6 AT','HILUX 4X4 CD SRV 2.8 TDI 6 AT'],
+  'Yaris':['YARIS XS 1.5 6 MT','YARIS XLS 1.5 6 MT','YARIS XLS 1.5 CVT']
+};
+const DM=[...Array(21)].map((_,i)=>({y:2025+Math.floor(i/12),l:MES[i%12]+'-'+String(25+Math.floor(i/12))}));
+let DA=null;
+function distData(){
+  if(DA)return DA;DA={};
+  const tot={'Corolla Cross':900,'Corolla':650,'Hiace':45,'Hilux':1500,'Yaris':500};
+  Object.keys(CAT).forEach(m=>{
+    const r=rng(hash(m)+17),vs=CAT[m],w=vs.map(()=>.5+r()*1.5),dr=vs.map(()=>(r()-.5)*.04);
+    const wo=w.reduce((a,b)=>a+b,0)*.05;
+    DA[m]=DM.map((_,t)=>{
+      const T=tot[m]*(1+.15*Math.sin(t/3)+(r()-.5)*.2);
+      const ww=[...vs.map((_,i)=>Math.max(.05,w[i]*(1+dr[i]*t)+(r()-.5)*.35*w[i])),wo*(1+(r()-.5)*.4)],s=ww.reduce((a,b)=>a+b,0);
+      return ww.map(x=>Math.round(T*x/s));
+    });
+  });
+  return DA;
+}
+/* proyección de unidades por versión a +3 y +6 meses: tendencia lineal de los últimos 6 meses sobre el mix,
+   volumen del modelo = promedio de los últimos 3 meses ajustado por el escenario elegido */
+function projRaw(m){
+  const D=distData()[m],n=D[0].length,last=DM.length-1,k=6;
+  const sh=D.map(u=>{const T=u.reduce((a,b)=>a+b,0);return u.map(x=>x/T)});
+  const T3=[last-2,last-1,last].map(t=>D[t].reduce((a,b)=>a+b,0)).reduce((a,b)=>a+b,0)/3;
+  const out={};
+  [3,6].forEach(h=>{
+    const s=[...Array(n)].map((_,i)=>{
+      const ys=sh.slice(last-k+1).map(r=>r[i]),xm=(k-1)/2,ym=ys.reduce((a,b)=>a+b,0)/k;
+      let num=0,den=0;ys.forEach((y,j)=>{num+=(j-xm)*(y-ym);den+=(j-xm)*(j-xm)});
+      return Math.max(0,ym+(num/den)*((k-1+h)-xm))});
+    const ss=s.reduce((a,b)=>a+b,0),Tp=T3*(1+(SC[S.sc].ven-1)*h/12);
+    out[h]=s.map(x=>x/ss*Tp);
+  });
+  return out;
+}
+/* versiones excluidas: o se reescala el % del resto (el total del modelo se mantiene) o pasan a "Otros" */
+function adjDist(m,u){
+  const n=CAT[m].length,T=u.reduce((a,b)=>a+b,0),out=u.slice();
+  const ex=[...Array(n)].map((_,i)=>i).filter(i=>S.dist.off.includes(m+'|'+i));
+  if(!ex.length)return out;
+  if(S.dist.modo==='otros'){ex.forEach(i=>{out[n]+=out[i];out[i]=0});return out}
+  const rem=T-ex.reduce((a,i)=>a+u[i],0);
+  if(rem<=0)return out.map(()=>0);
+  return u.map((x,i)=>ex.includes(i)?0:x*T/rem);
+}
+function vDist(){
+  const D=distData(),{modelo,anio,medida,modo,off}=S.dist,pct=medida==='pct';
+  const hist=DM.map((_,i)=>i).filter(i=>anio==='Todos'||DM[i].y===+anio);
+  const models=Object.keys(CAT).filter(m=>modelo==='Todos'||m===modelo);
+  const PL=['dic-26 (+3 m)','mar-27 (+6 m)'],last=DM.length-1;
+  const soft=p=>`color-mix(in srgb, var(--sc-base) ${Math.round(Math.min(1,p/.6)*45)}%, var(--surface))`;
+  const cl=(ci)=>(ci>=hist.length?'pj':'')+(ci===hist.length?' p0':'');
+  const vc=x=>x==null||!isFinite(x)?'<td>–</td>':`<td style="color:${x>=0?'var(--sc-opt)':'var(--red)'}">${x>=0?'+':'−'}${fmt1(Math.abs(x))}${pct?'':'%'}</td>`;
+  const colsOf=m=>{const pr=projRaw(m);return [...hist.map(t=>adjDist(m,D[m][t])),adjDist(m,pr[3]),adjDist(m,pr[6])]};
+  let body='';
+  models.forEach(m=>{
+    const n=CAT[m].length,names=[...CAT[m],'Otros'],cols=colsOf(m),tots=cols.map(u=>u.reduce((a,b)=>a+b,0));
+    const a0=adjDist(m,D[m][last]),a3=adjDist(m,D[m][last-3]),a6=adjDist(m,D[m][last-6]);
+    const T0=a0.reduce((a,b)=>a+b,0),T3=a3.reduce((a,b)=>a+b,0),T6=a6.reduce((a,b)=>a+b,0);
+    const vr=(i,aB,TB)=>pct?(a0[i]/T0-aB[i]/TB)*100:(aB[i]>0?(a0[i]/aB[i]-1)*100:null);
+    body+=`<tr class="mrow"><td>${m}</td>${tots.map((x,ci)=>`<td class="${cl(ci)}">${pct?'100%':fmtN(x)}</td>`).join('')}${pct?'<td>–</td><td>–</td>':vc((T0/T3-1)*100)+vc((T0/T6-1)*100)}</tr>`;
+    names.forEach((v,i)=>{
+      const exc=i<n&&off.includes(m+'|'+i);
+      body+=`<tr class="${exc?'exc':''}"><td class="vn">${v}${exc?' <span class="tag">excluida</span>':''}</td>${cols.map((u,ci)=>{
+        if(exc)return `<td class="${cl(ci)}">–</td>`;
+        const p=tots[ci]?u[i]/tots[ci]:0;
+        return pct?`<td class="${cl(ci)}" style="background:${soft(p)}">${Math.round(p*100)}%</td>`:`<td class="${cl(ci)}">${fmtN(u[i])}</td>`}).join('')}${exc?'<td>–</td><td>–</td>':vc(vr(i,a3,T3))+vc(vr(i,a6,T6))}</tr>`;
+    });
+  });
+  const pal=['var(--sc-base)','var(--sc-opt)','var(--sc-pes)','var(--red)','#7A5BA6','#2A9DA8'];
+  let chart='';
+  if(modelo!=='Todos'){
+    const m=modelo,n=CAT[m].length,names=[...CAT[m],'Otros'],cs=colsOf(m),tt=cs.map(u=>u.reduce((a,b)=>a+b,0));
+    const colr=i=>i===n?'#9AA3AD':pal[i%pal.length];
+    chart=`<div class="card"><h3>Evolución del mix de versiones: ${m}</h3>
+      <p class="sub">Las dos últimas barras, más claras, son la proyección a +3 y +6 meses (escenario ${SC[S.sc].n.toLowerCase()}).</p>
+      ${legend(names.map((v,i)=>[v,colr(i),1]))}
+      ${bars({labels:[...hist.map(i=>DM[i].l),'+3 m','+6 m'],series:names.map((v,i)=>({data:cs.map((u,ci)=>tt[ci]?u[i]/tt[ci]*100:0),color:colr(i)})),stacked:true,w:CWF,h:250,ymax:100,fmt:x=>Math.round(x)+'%',rot:true,fade:i=>i>=hist.length,label:'Mix de versiones de '+m})}</div>`;
+  }
+  const keys=models.flatMap(m=>CAT[m].map((_,i)=>m+'|'+i));
+  const incl=keys.filter(k=>!off.includes(k)).length;
+  const vsel=`<div><label>Versiones</label><details class="ms" style="margin:0" ${S.dist.open?'open':''} ontoggle="S.dist.open=this.open"><summary>${incl} de ${keys.length} incluidas</summary><div class="msb"><div class="msa"><button onclick="distAll(true)">Todas</button><button onclick="distAll(false)">Ninguna</button></div>${models.map(m=>`<div class="sub" style="margin:6px 0 2px">${m}</div>`+CAT[m].map((v,i)=>`<label><input type="checkbox" ${off.includes(m+'|'+i)?'':'checked'} onchange="distTog('${m}',${i})"> ${v}</label>`).join('')).join('')}</div></details></div>`;
+  return `
+  <h2>Distribución de autos</h2>
+  <div class="card">
+    <p class="sub">Misma lectura que la tabla dinámica de Excel: cada modelo suma 100% por mes y las filas de abajo son sus versiones. Las dos columnas de proyección (+3 m y +6 m) y las variaciones de los últimos 3 y 6 meses son la base para anticipar pedidos. Deslizá hacia la derecha para ver todo.</p>
+    <div class="ctl">
+      ${sel('dm',['Todos',...Object.keys(CAT)],modelo,'distModelo','Modelo')}
+      <div><label>Año</label><div class="seg">${['Todos','2025','2026'].map(a=>`<button aria-pressed="${a===anio}" onclick="distAnio('${a}')">${a}</button>`).join('')}</div></div>
+      <div><label>Mostrar</label><div class="seg"><button aria-pressed="${pct}" onclick="distMed('pct')">Porcentaje</button><button aria-pressed="${!pct}" onclick="distMed('num')">Unidades</button></div></div>
+    </div>
+    <div class="ctl">
+      ${vsel}
+      <div><label>Lo que se destilda</label><div class="seg"><button aria-pressed="${modo==='rescale'}" onclick="distModo('rescale')">Reescalar el resto</button><button aria-pressed="${modo==='otros'}" onclick="distModo('otros')">Pasar a Otros</button></div></div>
+    </div>
+    <div class="tw"><table class="pv"><tr><th>Etiquetas de fila</th>${hist.map(i=>`<th>${DM[i].l}</th>`).join('')}${PL.map((l,j)=>`<th class="pj${j?'':' p0'}">${l}</th>`).join('')}<th>Var. 3 m${pct?' (pp)':''}</th><th>Var. 6 m${pct?' (pp)':''}</th></tr>${body}</table></div>
+    <p class="sub" style="margin-top:8px">Si no van a pedir una versión, destildala: con “Reescalar el resto” su porcentaje se reparte proporcionalmente entre las demás y el total del modelo no cambia. “Otros” agrupa las versiones sin volumen propio.</p>
+    <div class="note">El pedido sugerido se arma en Simulación y escenarios, tomando esta distribución como input <span class="tag">a definir</span>. Qué se cuenta en cada mes (retiros, adjudicaciones o ventas) sale de los datos de Toyota <span class="tag">a definir</span>.</div>
+  </div>
+  ${chart}`;
+}
+
+/* ---------- navegación y eventos ---------- */
+const TABS=[['home','Resumen'],['vintage','Vintage'],['cambio','Cambio de modelo'],['dist','Distribución de autos'],['conv','Conversión'],['sim','Simulación y escenarios'],['grupos','Grupos'],['mora','Caída y mora'],['modelos','Modelos']];
+const VIEWS={home:vHome,vintage:vVintage,cambio:vCambio,dist:vDist,conv:vConv,sim:vSim,grupos:vGrupos,mora:vMora,modelos:vModelos};
+function render(keep){
+  sizes();
+  document.getElementById('nav').innerHTML=TABS.map(([k,n])=>`<button ${k===S.tab?'aria-current="page"':''} onclick="go('${k}')">${n}</button>`).join('');
+  document.getElementById('scseg').innerHTML=Object.keys(SC).map(k=>`<button aria-pressed="${k===S.sc}" onclick="setSc('${k}')">${SC[k].n}</button>`).join('');
+  const y=window.scrollY;
+  document.getElementById('view').innerHTML=VIEWS[S.tab]();
+  if(keep)window.scrollTo(0,y);
+}
+function go(t){S.tab=t;render();window.scrollTo(0,0);const a=document.querySelector('.nav [aria-current]');if(a)a.scrollIntoView({inline:'center',block:'nearest'})}
+function setSc(k){S.sc=k;render(true)}
+function fNivel(v){S.v.nivel=v;render(true)}function fPlan(v){S.v.plan=v;render(true)}
+function fConc(v){S.v.conc=v;render(true)}function fUf(v){S.v.uf=v;render(true)}
+function fModelo(v){S.v.modelo=v;render(true)}
+function cmDim(d){S.cm.dim=d;S.cm.per=7;render(true)}
+function cmPer(v){const l=S.cm.dim==='cosecha'?COSECHAS:['2025-T1','2025-T2','2025-T3','2025-T4','2026-T1','2026-T2','2026-T3','2026-T4*'];S.cm.per=l.indexOf(v);render(true)}
+function moraC(v){S.mora.cuota=v;render(true)}
+function shapSet(v){S.shap=v;render(true)}
+function grSet(k,v){const n=Math.max(1,Math.min(12,parseInt(v)||1));S.gr[k]=n;document.getElementById('gres').innerHTML=renderGrupos()}
+function cosTog(i){S.cos=S.cos.includes(i)?S.cos.filter(x=>x!==i):[...S.cos,i];render(true)}
+function cosAll(f){S.cos=f?COSECHAS.map((_,i)=>i):[];render(true)}
+function cuotasMode(m){S.cuotas=m;render(true)}
+function convModelo(m){S.convModelo=m;render(true)}
+function yyMes(v){S.yy.mes=v;render(true)}
+function yyA(v){S.yy.a=parseInt(v);render(true)}
+function yyB(v){S.yy.b=parseInt(v);render(true)}
+function distModelo(v){S.dist.modelo=v;render(true)}
+function distAnio(v){S.dist.anio=v;render(true)}
+function distMed(v){S.dist.medida=v;render(true)}
+function distTog(m,i){const k=m+'|'+i,o=S.dist.off;S.dist.off=o.includes(k)?o.filter(x=>x!==k):[...o,k];render(true)}
+function distAll(f){S.dist.off=f?[]:Object.keys(CAT).flatMap(m=>CAT[m].map((_,i)=>m+'|'+i));render(true)}
+function distModo(v){S.dist.modo=v;render(true)}
+function verModelo(v){S.ver.modelo=v;S.ver.vc=VERS[v][0];render(true)}
+function mvSel(k,m){S.mv=k;if(m)S.mm=m;render(true)}
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>render(true),150)});
+render();
+</script>
+</body>
+</html>
